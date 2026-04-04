@@ -3,33 +3,88 @@ import { prisma } from "store/client";
 import { AuthInput } from "./types.ts";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { authMiddleware } from "./middleware.ts";
 
 const app = express();
 
 app.use(express.json());
 
-app.post("/website", async (req, res) => {
-    const { id, url } = req.body;
-    if (!id || !url) {
-        return res.status(400).json({
-            message: "Missing required fields: id and url",
+app.post("/website", authMiddleware, async (req, res) => {
+    try {
+        const { id, url } = req.body;
+        if (!id || !url) {
+            return res.status(400).json({
+                message: "Missing required fields: id and url",
+                success: false,
+            });
+        }
+        if(!req.userId){
+            return res.status(401).json({
+                message: "Unauthorized",
+                success: false,
+            });
+        }
+        const website = await prisma.website.create({
+            data: {
+                id,
+                url,
+                user_id: req.userId
+            }
+        })
+        return res.status(201).json({
+            message: "Website created successfully",
+            success: true,
+            id: website.id
+        });
+    } catch (error) {
+        console.log("Error in creating the website:", error);
+        return res.status(500).json({
+            message: "Internal server error",
             success: false,
         });
     }
-    // await prisma.website.create({
-    //     data: {
-    //         id,
-    //         url
-    //     }
-    // })
 });
 
-app.get("/status/:websiteId", (req, res) => {
-    const { websiteId } = req.params;
-    return res.json({
-        websiteId,
-        status: "up",
-    })
+app.get("/status/:websiteId", async (req, res) => {
+    try {
+        const { websiteId } = req.params;
+        if (!websiteId) {
+            return res.status(400).json({
+                message: "Missing required parameter: websiteId",
+                success: false,
+            });
+        }
+        const website = await prisma.website.findFirst({
+            where: {
+                id : websiteId,
+            },
+            include: {
+                ticks: {
+                    take: 1,
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                }
+            }
+        })
+        if(!website){
+            return res.status(404).json({
+                message: "Website not found",
+                success: false
+            })
+        }
+        return res.status(200).json({
+            website,
+            message: "Website status fetched successfully",
+            success: true
+        })
+    } catch (error) {
+        console.log("Error in fetching the website status:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false,
+        });
+    }
 });
 
 app.post("/user/signup", async (req, res) => {
