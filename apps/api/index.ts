@@ -4,10 +4,12 @@ import { AuthInput } from "./types.ts";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { authMiddleware } from "./middleware.ts";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser())
 
 app.post("/website", authMiddleware, async (req, res) => {
     try {
@@ -31,13 +33,20 @@ app.post("/website", authMiddleware, async (req, res) => {
                 user_id: req.userId
             }
         })
+        console.log("Created website:", website);
         return res.status(201).json({
             message: "Website created successfully",
             success: true,
             id: website.id
         });
-    } catch (error) {
+    } catch (error : any) {
         console.log("Error in creating the website:", error);
+        if (error.code === "P2002") {
+            return res.status(400).json({
+                message: "Website id already exists",
+                success: false,
+            });
+        }
         return res.status(500).json({
             message: "Internal server error",
             success: false,

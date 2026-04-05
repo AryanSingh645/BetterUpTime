@@ -8,7 +8,7 @@ export const authMiddleware = async (
 ) => {
     try {
         const token =
-            req.cookies?.access_token ||
+            req.cookies?.token ||
             req.header("Authorization")?.replace("Bearer ", "");
         if (!token) {
             return res.status(400).json({
