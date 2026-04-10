@@ -31,13 +31,14 @@ model Region {
 }
 
 model WebsiteTick {
-  id         String        @id @default(uuid())
-  status     WebsiteStatus
-  website_id String
-  region_id  String
-  createdAt  DateTime      @default(now())
-  region     Region        @relation(fields: [region_id], references: [id])
-  website    Website       @relation(fields: [website_id], references: [id])
+  id            String        @id @default(uuid())
+  status        WebsiteStatus
+  website_id    String
+  region_id     String
+  response_time Int
+  createdAt     DateTime      @default(now())
+  region        Region        @relation(fields: [region_id], references: [id])
+  website       Website       @relation(fields: [website_id], references: [id])
 }
 
 enum WebsiteStatus {
