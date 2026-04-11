@@ -10,7 +10,7 @@ async function main() {
             }
         })
 
-        await xaddBulk(websites.map(w => ({id: w.id, url: w.url})))
+        await xaddBulk(process.env.STREAM_NAME!, websites.map(w => ({id: w.id, url: w.url})))
 
     } catch (error) {
         console.log("Error in pusher app:", error);
