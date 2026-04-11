@@ -7,43 +7,49 @@ const client = await createClient()
 
 interface WebsiteEvent {
     url : string;
-    id: string
+    id: string;
 }
 
-const STREAM_NAME = "betteruptime:website";
+interface DBWriteEvent {
+    status: "UP" | "DOWN" | "UNKNOWN";
+    responseTime: number;
+    websiteId: string;
+}
 
-export const xadd = async (event: WebsiteEvent) => {
+export const xadd = async (STREAM_NAME: string, event: WebsiteEvent | DBWriteEvent) => {
     try {
-        const response = await client.xAdd(STREAM_NAME, "*" , {
-            url: event.url,
-            id: event.id
-        });
+        const eventData: Record<string, string> = {};
+        for (const [key, value] of Object.entries(event)) {
+            eventData[key] = String(value);
+        }
+        const response = await client.xAdd(STREAM_NAME, "*" , eventData);
         console.log("Event added to Redis with IDs:", response)
-    } catch (error) {
-        console.log("Error in adding event to Redis stream:", error);
+    } catch (error : any) {
+        console.log("Error in adding event to Redis stream:", error?.message);
     }
 }
 
-export const xaddBulk = async(events : WebsiteEvent[]) => {
+export const xaddBulk = async(STREAM_NAME: string, events : WebsiteEvent[] | DBWriteEvent[]) => {
     try {
         for(let i = 0; i < events.length; i++){
             const event = events[i];
-            if(!event || !event.url || !event.id){
+            if(!event || Object.keys(event).length == 0){
                 console.log(`Skipping event at index ${i} due to missing url or id`);
                 continue;
             }
-            const response = await client.xAdd(STREAM_NAME, "*" , {
-                url: event.url,
-                id: event.id
-            });
+            const eventData: Record<string, string> = {};
+            for (const [key, value] of Object.entries(event)) {
+                eventData[key] = String(value);
+            }
+            const response = await client.xAdd(STREAM_NAME, "*" , eventData);
             console.log("Event added to Redis with IDs:", response)
         }
-    } catch (error) {
-        console.log("Error in adding bulk events to Redis stream:", error);
+    } catch (error : any) {
+        console.log("Error in adding bulk events to Redis stream:", error?.message);
     }
 }
 
-export const xreadGroup = async (consumerGroup: string, consumerName: string) => {
+export const xreadGroup = async (STREAM_NAME: string, consumerGroup: string, consumerName: string) => {
     try {
         const response = await client.xReadGroup(consumerGroup, consumerName, {
             key: STREAM_NAME,
@@ -52,22 +58,22 @@ export const xreadGroup = async (consumerGroup: string, consumerName: string) =>
             COUNT: 2
         })
         return response;
-    } catch (error) {
-        console.log("Error in reading from Redis streams as consumer group:", error);
+    } catch (error : any) {
+        console.log("Error in reading from Redis streams as consumer group:", error?.message);
     }
 }
 
-export const xack = async (consumerGroup: string, eventId: string) => {
+export const xack = async (STREAM_NAME: string, consumerGroup: string, eventId: string) => {
     try {
         const response = await client.xAck(STREAM_NAME, consumerGroup, eventId);
         console.log(`Acknowledged message with ID ${eventId} in consumer group ${consumerGroup}. Response:`, response);
         return response;
-    } catch (error) {
-        // console.log("Error in acknowledging messages in Redis stream:", error);
+    } catch (error : any) {
+        console.log("Error in acknowledging messages in Redis stream:", error?.message);
     }
 }
 
-export const xackBulk = async (consumerGroup: string, eventIds: string[]) => {
+export const xackBulk = async (STREAM_NAME: string, consumerGroup: string, eventIds: string[]) => {
     try {
         let responses = [];
         for(let i = 0; i < eventIds.length; i++){
@@ -81,7 +87,7 @@ export const xackBulk = async (consumerGroup: string, eventIds: string[]) => {
             responses.push(response);
         }
         console.log("Bulk acknowledgment responses:", responses);
-    } catch (error) {
-        console.log("Error in acknowledging bulk messages in Redis stream:", error);
+    } catch (error : any) {
+        console.log("Error in acknowledging bulk messages in Redis stream:", error?.message);
     }
 }
