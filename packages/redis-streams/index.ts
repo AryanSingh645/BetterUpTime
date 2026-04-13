@@ -26,6 +26,7 @@ export const xadd = async (STREAM_NAME: string, event: WebsiteEvent | DBWriteEve
         console.log("Event added to Redis with IDs:", response)
     } catch (error : any) {
         console.log("Error in adding event to Redis stream:", error?.message);
+        throw error;
     }
 }
 
@@ -46,6 +47,7 @@ export const xaddBulk = async(STREAM_NAME: string, events : WebsiteEvent[] | DBW
         }
     } catch (error : any) {
         console.log("Error in adding bulk events to Redis stream:", error?.message);
+        throw error;
     }
 }
 
@@ -60,6 +62,7 @@ export const xreadGroup = async (STREAM_NAME: string, consumerGroup: string, con
         return response;
     } catch (error : any) {
         console.log("Error in reading from Redis streams as consumer group:", error?.message);
+        throw error;
     }
 }
 
@@ -70,6 +73,7 @@ export const xack = async (STREAM_NAME: string, consumerGroup: string, eventId: 
         return response;
     } catch (error : any) {
         console.log("Error in acknowledging messages in Redis stream:", error?.message);
+        throw error;
     }
 }
 
@@ -89,5 +93,6 @@ export const xackBulk = async (STREAM_NAME: string, consumerGroup: string, event
         console.log("Bulk acknowledgment responses:", responses);
     } catch (error : any) {
         console.log("Error in acknowledging bulk messages in Redis stream:", error?.message);
+        throw error;
     }
 }
