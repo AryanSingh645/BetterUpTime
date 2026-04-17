@@ -443,8 +443,8 @@
 			"typeName": "shape"
 		},
 		{
-			"x": 34.992397373113526,
-			"y": 457.99063064938525,
+			"x": 26.831175265457144,
+			"y": 540.2935943308644,
 			"z": 0.6346443622874526,
 			"meta": {},
 			"id": "camera:page:page",
@@ -722,9 +722,9 @@
 			"editingShapeId": null,
 			"croppingShapeId": null,
 			"selectedShapeIds": [
-				"shape:NK6WeUx6MSVguzpZxB9Cm"
+				"shape:SNIyn_QlzVf2CTuWBN2pi"
 			],
-			"hoveredShapeId": "shape:NK6WeUx6MSVguzpZxB9Cm",
+			"hoveredShapeId": null,
 			"erasingShapeIds": [],
 			"hintingShapeIds": [],
 			"focusedGroupId": null,
@@ -1531,6 +1531,135 @@
 			"typeName": "shape"
 		},
 		{
+			"x": 1372.3776616323862,
+			"y": 180.93196666935023,
+			"rotation": 0,
+			"isLocked": false,
+			"opacity": 1,
+			"meta": {},
+			"id": "shape:SNIyn_QlzVf2CTuWBN2pi",
+			"type": "text",
+			"props": {
+				"color": "orange",
+				"size": "m",
+				"w": 450.20227274243916,
+				"font": "mono",
+				"textAlign": "start",
+				"autoSize": false,
+				"scale": 0.8319268664386977,
+				"richText": {
+					"type": "doc",
+					"attrs": {
+						"dir": "auto"
+					},
+					"content": [
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "{"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "\t"
+								},
+								{
+									"type": "text",
+									"marks": [
+										{
+											"type": "bold"
+										}
+									],
+									"text": "status"
+								},
+								{
+									"type": "text",
+									"text": ": webHealth.status as \"UP\" | \"DOWN\" | \"UNKNOWN\","
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "\t"
+								},
+								{
+									"type": "text",
+									"marks": [
+										{
+											"type": "bold"
+										}
+									],
+									"text": "responseTime"
+								},
+								{
+									"type": "text",
+									"text": ": webHealth.responseTime,"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "\t"
+								},
+								{
+									"type": "text",
+									"marks": [
+										{
+											"type": "bold"
+										}
+									],
+									"text": "websiteId"
+								},
+								{
+									"type": "text",
+									"text": ": webHealth.websiteId"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "}"
+								}
+							]
+						}
+					]
+				}
+			},
+			"parentId": "page:page",
+			"index": "ak2ZTVnV",
+			"typeName": "shape"
+		},
+		{
 			"x": 985.3333333333337,
 			"y": 468.33333333333326,
 			"rotation": 0,
@@ -2120,8 +2249,10 @@
 			"followingUserId": null,
 			"opacityForNextShape": 1,
 			"stylesForNextShape": {
-				"tldraw:color": "red",
-				"tldraw:fill": "pattern"
+				"tldraw:geo": "arrow-up",
+				"tldraw:color": "orange",
+				"tldraw:font": "mono",
+				"tldraw:textAlign": "start"
 			},
 			"brush": null,
 			"scribbles": [],
@@ -2154,7 +2285,7 @@
 			"isFocused": true,
 			"devicePixelRatio": 1,
 			"isCoarsePointer": false,
-			"isHoveringCanvas": true,
+			"isHoveringCanvas": false,
 			"openMenus": [],
 			"isChangingStyle": false,
 			"isReadonly": false,
