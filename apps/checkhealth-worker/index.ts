@@ -23,27 +23,15 @@ type xreadGroupResponse = {
 }
 
 async function checkHealth(url : string, websiteId : string) {
-    return new Promise<{status: string, responseTime: number, websiteId : string}>((resolve, reject) => {
-        
-        const startTime = Date.now();
-        
-        axios.get(url, {timeout: 10_000})
-        .then(async () => {
-            const endTime = Date.now();
-            const responseTime = endTime - startTime;
-
-            resolve({status: "UP", responseTime, websiteId})
-            
-        })
-        .catch(async () => {
-            
-            const endTime = Date.now();
-            const responseTime = endTime - startTime;
-
-            resolve({status: "DOWN", responseTime, websiteId})
-
-        })
-    })
+    const startTime = Date.now();
+    try {
+        await axios.get(url, { timeout: 10_000 });
+        const responseTime = Date.now() - startTime;
+        return { status: "UP", responseTime, websiteId };
+    } catch (error) {
+        const responseTime = Date.now() - startTime;
+        return { status: "DOWN", responseTime, websiteId };
+    }
 }
 
 async function main() {
