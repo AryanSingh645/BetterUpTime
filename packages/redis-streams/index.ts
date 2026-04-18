@@ -51,13 +51,13 @@ export const xaddBulk = async(STREAM_NAME: string, events : WebsiteEvent[] | DBW
     }
 }
 
-export const xreadGroup = async (STREAM_NAME: string, consumerGroup: string, consumerName: string) => {
+export const xreadGroup = async (STREAM_NAME: string, consumerGroup: string, consumerName: string, COUNT: number) => {
     try {
         const response = await client.xReadGroup(consumerGroup, consumerName, {
             key: STREAM_NAME,
             id: ">"
         }, {
-            COUNT: 2
+            COUNT
         })
         return response;
     } catch (error : any) {
