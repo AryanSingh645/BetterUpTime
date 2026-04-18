@@ -49,7 +49,7 @@ async function checkHealth(url : string, websiteId : string) {
 async function main() {
     try {
         while (true) {
-            const eventRead = await xreadGroup(process.env.STREAM_NAME!, REGION_ID, WORKER_ID) as xreadGroupResponse[];
+            const eventRead = await xreadGroup(process.env.STREAM_NAME!, REGION_ID, WORKER_ID, 2) as xreadGroupResponse[];
             if(!eventRead || eventRead.length === 0 || !eventRead[0]?.messages){
                 continue;
             }
