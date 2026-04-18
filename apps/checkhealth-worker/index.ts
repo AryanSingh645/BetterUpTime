@@ -1,6 +1,5 @@
 import axios from "axios";
 import {xreadGroup, xack, xackBulk, xadd} from "redis-streams/client"
-import {prisma} from "store/client"
 
 const REGION_ID = process.env.REGION_ID!;
 const WORKER_ID = process.env.WORKER_ID!;
