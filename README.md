@@ -1,159 +1,113 @@
-# Turborepo starter
+# BetterUpTime
 
-This Turborepo starter is maintained by the Turborepo core team.
+A distributed website uptime monitoring system built in a Bun monorepo with Redis Streams, regional health-check workers, and a stream-based write pipeline.
 
-## Using this example
+![BetterUpTime Architecture](./apps/web/public/frame.png)
 
-Run the following command:
+> added websites health check workers which will be consumer groups of redis streams , and will be deployed in various regions for checking the website health from different regions distributed among workers within that region.
 
-```sh
-npx create-turbo@latest
+## Why This Architecture
+
+BetterUpTime separates monitoring into pipeline stages so each part can scale independently:
+
+- Website jobs are pushed into Redis Streams.
+- Health checks are processed by regional workers using consumer groups.
+- Results are handed off through Redis for durable processing.
+- Database persistence is isolated from probing logic.
+
+This keeps website checks fast and limits direct write pressure on the primary database.
+
+## Monorepo Structure
+
+### Apps
+
+- apps/api: API layer.
+- apps/pusher: Pushes website check jobs to Redis Streams.
+- apps/checkhealth-worker: Pulls jobs, checks website health, and forwards result events.
+- apps/web: Next.js frontend.
+
+### Shared Packages
+
+- packages/redis-streams: Redis Streams helpers for add, read-group, and ack flows.
+- packages/store: Prisma schema and DB client.
+- packages/ui: Shared UI components.
+- packages/eslint-config, packages/typescript-config: Shared tooling config.
+
+## Event Flow
+
+1. Pusher fetches websites and publishes check events.
+2. Regional checkhealth workers consume those events from their region-aligned consumer group.
+3. Workers compute status and response time.
+4. Workers publish health result events to a DB-write stream.
+5. Source messages are acknowledged only after successful handoff.
+6. A DB writer module consumes result events and persists to Postgres.
+
+## Local Setup
+
+### 1) Install dependencies
+
+```bash
+bun install
 ```
 
-## What's inside?
+### 2) Start the web app
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+cd apps/web && bun run dev
 ```
 
-Without global `turbo`, use your package manager:
+### 3) Start API
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```bash
+cd apps/api && bun run index.ts
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 4) Start pusher
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+```bash
+cd apps/pusher && bun run index.ts
 ```
 
-Without global `turbo`:
+### 5) Start one health-check worker
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+cd apps/checkhealth-worker && bun run index.ts
 ```
 
-### Develop
+You can start multiple worker instances with different WORKER_ID values to simulate horizontal scaling in a region.
 
-To develop all apps and packages, run the following command:
+## Required Environment Variables
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+Set these in each service where applicable:
 
-```sh
-cd my-turborepo
-turbo dev
+- STREAM_NAME: Source website-check stream.
+- DB_WRITE_STREAM_NAME: Result handoff stream for DB writer.
+- REGION_ID: Region/group identifier for regional workers.
+- WORKER_ID: Unique consumer name per worker instance.
+- DATABASE_URL: Postgres connection string (for services that write/read DB).
+
+## Scripts
+
+From repository root:
+
+```bash
+bun run dev
+bun run build
+bun run lint
+bun run check-types
 ```
 
-Without global `turbo`, use your package manager:
+## Tech Stack
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+- Bun
+- TypeScript
+- Turbo
+- Redis Streams
+- PostgreSQL
+- Prisma
+- Express
+- Next.js
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Current Goal
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Build a reliable multi-region uptime pipeline where regional workers probe websites, hand off results through Redis Streams, and persistence is handled by a dedicated writer module.
