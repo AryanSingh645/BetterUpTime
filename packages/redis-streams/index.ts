@@ -57,7 +57,8 @@ export const xreadGroup = async (STREAM_NAME: string, consumerGroup: string, con
             key: STREAM_NAME,
             id: ">"
         }, {
-            COUNT
+            COUNT,
+            BLOCK: 5000
         })
         return response;
     } catch (error : any) {
